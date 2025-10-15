@@ -25,17 +25,17 @@ Feel free to use/extend this repo!
 
 ## Setup
 
-This repository is based on [Poetry](https://python-poetry.org/).
+This repository uses [uv](https://github.com/astral-sh/uv) for fast Python package management.
 After cloning this repo, run the following to complete the setup.
 
 ```sh
-poetry config virtualenvs.in-project true && poetry install
+uv sync --all-extras
 ```
 
 ## Demo
 
 ```sh
-poetry run python app.py -m assets/tunnel.map -i assets/tunnel.scen -N 4 --time_limit_ms 5000 --verbose 2
+uv run python app.py -m assets/tunnel.map -i assets/tunnel.scen -N 4 --time_limit_ms 5000 --verbose 2
 ```
 
 The result will be saved in `output.txt`.
@@ -57,7 +57,7 @@ mapf-visualizer ./assets/tunnel.map ./output.txt
 When you need just a suboptimal solution, try:
 
 ```sh
-poetry run python app.py -m assets/tunnel.map -i assets/tunnel.scen -N 2 --no-flg_star
+uv run python app.py -m assets/tunnel.map -i assets/tunnel.scen -N 2 --no-flg_star
 ```
 
 ### Jupyter Lab
@@ -66,7 +66,7 @@ Jupyter Lab is also available.
 Use the following command:
 
 ```sh
-poetry run jupyter lab
+uv run jupyter lab
 ```
 
 You can see an example in `notebooks/demo.ipynb`.
