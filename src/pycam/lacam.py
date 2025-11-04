@@ -8,37 +8,31 @@ Algorithm Structure:
     LaCAM* uses a two-level search approach:
 
     - **High-level search**: Explores the configuration space (complete states
-      of all agents' positions) using best-first search guided by heuristic costs.
-      Configurations are evaluated using f = g + h, where g is the actual cost
-      from the start and h is a heuristic lower bound to the goal.
+      of all agents' positions) in a depth-first search manner. Configurations 
+      are evaluated using f = g + h, where g is the actual cost from the start,
+      and h is a cos-to-go estimate.
 
-    - **Low-level search**: For each high-level node, explores different orderings
-      and constraints on agent movements to generate valid successor configurations
-      without collisions.
+    - **Low-level search**: For each high-level node, explores constraints on agent 
+      movements to generate diverse successor configurations.
 
 Key Properties:
     - **Anytime algorithm**: Can be interrupted at any time with a valid solution
     - **Eventually optimal**: Given sufficient time, converges to optimal solutions
-      for sum-of-costs objective with cumulative transition costs
+      for sum-of-loss objective with cumulative transition costs
     - **Complete**: Always finds a solution if one exists
 
 Implementation Notes:
     This is a **minimal educational implementation** using random action selection
     instead of PIBT for simplicity. While this maintains the core algorithmic
     structure and theoretical properties, it significantly reduces practical
-    performance compared to the full LaCAM3 implementation with PIBT integration.
-
-    For production use cases requiring maximum scalability (10k+ agents), consider:
-    - LaCAM with PIBT: https://github.com/Kei18/py-lacam/tree/pibt
-    - LaCAM3 (C++): https://github.com/Kei18/lacam3
+    performance compared to the full LaCAM implementation with PIBT integration.
+    With PIBT, have a look: https://github.com/Kei18/py-lacam/tree/pibt
 
 References:
     - Okumura, K. LaCAM: Search-Based Algorithm for Quick Multi-Agent Pathfinding.
       AAAI. 2023. https://ojs.aaai.org/index.php/AAAI/article/view/26377
     - Okumura, K. Improving LaCAM for Scalable Eventually Optimal Multi-Agent Pathfinding.
       IJCAI. 2023. https://www.ijcai.org/proceedings/2023/28
-    - Okumura, K. Engineering LaCAM*: Towards Real-Time, Large-Scale, and Near-Optimal
-      Multi-Agent Pathfinding. AAMAS. 2024. https://arxiv.org/abs/2308.04292
 """
 
 from __future__ import annotations
@@ -75,8 +69,8 @@ class LowLevelNode:
     """Low-level search node representing partial agent assignments.
 
     In LaCAM*, low-level nodes represent constraints on which agents must move
-    to which locations. The low-level tree explores different orderings and
-    assignments to find collision-free configurations.
+    to which locations. The low-level tree explores different assignments to 
+    generate diverse configurations.
 
     Attributes:
         who: List of agent IDs with assigned next locations.
@@ -110,8 +104,8 @@ class HighLevelNode:
     """High-level search node representing a complete configuration.
 
     High-level nodes form the main search space, where each node represents
-    a complete configuration (positions of all agents). The search performs
-    best-first search with lower bounds to find optimal or near-optimal solutions.
+    a configuration (positions of all agents). The search is performed in a 
+    depth-first search manner to find solutions quickly.
 
     Attributes:
         Q: Current configuration (positions of all agents).
@@ -166,32 +160,23 @@ class LaCAM:
     in the configuration space to find collision-free paths for multiple agents.
 
     Algorithm Overview:
-        **High-level search**: Best-first search over configurations (complete
-        states of all agents). Each configuration is evaluated using f = g + h,
-        where g is the actual cost and h is a heuristic lower bound.
+        **High-level search**: Conducts search over configurations (states of all 
+        agents). Each configuration is evaluated using f = g + h, where g is the 
+        actual cost and h is a heuristic lower bound.
 
-        **Low-level search**: For each high-level configuration, explores different
-        agent orderings and movement constraints to generate valid successor
-        configurations without collisions.
+        **Low-level search**: For each high-level configuration, explores movement 
+        constraints to generate diverse successor configurations.
 
     Solution Modes:
         - **Anytime mode (flg_star=True)**: Continues refining the solution
           after finding an initial solution, eventually converging to optimal
           (given sufficient time). This is the default mode.
         - **First-solution mode (flg_star=False)**: Returns immediately after
-          finding the first valid solution (faster but suboptimal).
+          finding the first valid solution (suboptimal).
 
     Optimality Guarantee:
         When run in anytime mode with sufficient time, LaCAM* is **eventually
-        optimal** for the sum-of-costs objective, provided that:
-        1. Solution costs are cumulative transition costs
-        2. The search is not terminated prematurely
-
-    Performance Characteristics:
-        - **Completeness**: Always finds a solution if one exists
-        - **Scalability**: This simplified implementation handles dozens to hundreds
-          of agents. For 10k+ agents, use LaCAM3 with PIBT integration.
-        - **Time complexity**: Dependent on problem size and time limit
+        optimal** for the sum-of-loss objective.
 
     Example:
         >>> from pycam import LaCAM, get_grid, get_scenario
@@ -199,7 +184,7 @@ class LaCAM:
         >>> starts, goals = get_scenario("scenario.scen", N=4)
         >>> planner = LaCAM()
         >>>
-        >>> # Anytime mode: Get eventually optimal solution
+        >>> # Anytime mode: Get optimal solution (eventually)
         >>> solution = planner.solve(
         ...     grid=grid,
         ...     starts=starts,
