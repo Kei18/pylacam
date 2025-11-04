@@ -1,19 +1,35 @@
 """pycam: A minimal Python implementation of LaCAM* for Multi-Agent Path Finding.
 
-This package provides an implementation of the LaCAM* algorithm along with
-utilities for loading MAPF problem instances, validating solutions, and
-computing solution costs.
+This package provides a simplified implementation of the LaCAM* algorithm, an
+anytime search-based algorithm for Multi-Agent Path Finding (MAPF) that is
+eventually optimal given sufficient time.
+
+LaCAM* uses a two-level search approach:
+- High-level: Explores configuration space (complete agent states)
+- Low-level: Explores constraints on agent movements to avoid collisions
+
+This implementation is designed for educational purposes, using random action
+selection instead of PIBT for simplicity. For production use with maximum
+scalability (10k+ agents), see the PIBT branch or LaCAM3 C++ implementation.
+
+Key Properties:
+    - **Anytime algorithm**: Can be interrupted at any time with a valid solution
+    - **Eventually optimal**: Converges to optimal solutions given sufficient time
+    - **Complete**: Always finds a solution if one exists
 
 Example:
     >>> from pycam import LaCAM, get_grid, get_scenario
     >>> grid = get_grid("assets/tunnel.map")
     >>> starts, goals = get_scenario("assets/tunnel.scen", N=4)
     >>> planner = LaCAM()
+    >>>
+    >>> # Anytime mode (eventually optimal)
     >>> solution = planner.solve(
     ...     grid=grid,
     ...     starts=starts,
     ...     goals=goals,
     ...     time_limit_ms=5000,
+    ...     flg_star=True,  # Enable refinement
     ...     verbose=1
     ... )
 """

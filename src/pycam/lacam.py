@@ -1,13 +1,44 @@
 """LaCAM* algorithm implementation for Multi-Agent Path Finding.
 
-This module implements the LaCAM* (Lazy Constraints Addition search for MAPF)
-algorithm, a graph pathfinding algorithm designed for solving MAPF problems
-with scalability and optimality guarantees.
+This module implements a simplified version of the LaCAM* algorithm
+(Lazy Constraints Addition search for MAPF), an anytime search-based
+algorithm for solving MAPF problems with eventual optimality guarantees.
+
+Algorithm Structure:
+    LaCAM* uses a two-level search approach:
+
+    - **High-level search**: Explores the configuration space (complete states
+      of all agents' positions) using best-first search guided by heuristic costs.
+      Configurations are evaluated using f = g + h, where g is the actual cost
+      from the start and h is a heuristic lower bound to the goal.
+
+    - **Low-level search**: For each high-level node, explores different orderings
+      and constraints on agent movements to generate valid successor configurations
+      without collisions.
+
+Key Properties:
+    - **Anytime algorithm**: Can be interrupted at any time with a valid solution
+    - **Eventually optimal**: Given sufficient time, converges to optimal solutions
+      for sum-of-costs objective with cumulative transition costs
+    - **Complete**: Always finds a solution if one exists
+
+Implementation Notes:
+    This is a **minimal educational implementation** using random action selection
+    instead of PIBT for simplicity. While this maintains the core algorithmic
+    structure and theoretical properties, it significantly reduces practical
+    performance compared to the full LaCAM3 implementation with PIBT integration.
+
+    For production use cases requiring maximum scalability (10k+ agents), consider:
+    - LaCAM with PIBT: https://github.com/Kei18/py-lacam/tree/pibt
+    - LaCAM3 (C++): https://github.com/Kei18/lacam3
 
 References:
-    - Okumura, K. LaCAM: Search-Based Algorithm for Quick Multi-Agent Pathfinding. AAAI. 2023.
-    - Okumura, K. Improving LaCAM for Scalable Eventually Optimal Multi-Agent Pathfinding. IJCAI. 2023.
-    - Okumura, K. Engineering LaCAM*: Towards Real-Time, Large-Scale, and Near-Optimal Multi-Agent Pathfinding. AAMAS. 2024.
+    - Okumura, K. LaCAM: Search-Based Algorithm for Quick Multi-Agent Pathfinding.
+      AAAI. 2023. https://ojs.aaai.org/index.php/AAAI/article/view/26377
+    - Okumura, K. Improving LaCAM for Scalable Eventually Optimal Multi-Agent Pathfinding.
+      IJCAI. 2023. https://www.ijcai.org/proceedings/2023/28
+    - Okumura, K. Engineering LaCAM*: Towards Real-Time, Large-Scale, and Near-Optimal
+      Multi-Agent Pathfinding. AAMAS. 2024. https://arxiv.org/abs/2308.04292
 """
 
 from __future__ import annotations
@@ -131,22 +162,60 @@ class HighLevelNode:
 class LaCAM:
     """LaCAM* solver for Multi-Agent Path Finding problems.
 
-    LaCAM* performs a best-first search in the configuration space (high-level),
-    with each node expansion using a low-level search to generate successor
-    configurations. The algorithm supports both optimal (with refinement) and
-    suboptimal (without refinement) solution modes.
+    LaCAM* is an anytime search-based algorithm that performs a two-level search
+    in the configuration space to find collision-free paths for multiple agents.
+
+    Algorithm Overview:
+        **High-level search**: Best-first search over configurations (complete
+        states of all agents). Each configuration is evaluated using f = g + h,
+        where g is the actual cost and h is a heuristic lower bound.
+
+        **Low-level search**: For each high-level configuration, explores different
+        agent orderings and movement constraints to generate valid successor
+        configurations without collisions.
+
+    Solution Modes:
+        - **Anytime mode (flg_star=True)**: Continues refining the solution
+          after finding an initial solution, eventually converging to optimal
+          (given sufficient time). This is the default mode.
+        - **First-solution mode (flg_star=False)**: Returns immediately after
+          finding the first valid solution (faster but suboptimal).
+
+    Optimality Guarantee:
+        When run in anytime mode with sufficient time, LaCAM* is **eventually
+        optimal** for the sum-of-costs objective, provided that:
+        1. Solution costs are cumulative transition costs
+        2. The search is not terminated prematurely
+
+    Performance Characteristics:
+        - **Completeness**: Always finds a solution if one exists
+        - **Scalability**: This simplified implementation handles dozens to hundreds
+          of agents. For 10k+ agents, use LaCAM3 with PIBT integration.
+        - **Time complexity**: Dependent on problem size and time limit
 
     Example:
         >>> from pycam import LaCAM, get_grid, get_scenario
         >>> grid = get_grid("map.map")
         >>> starts, goals = get_scenario("scenario.scen", N=4)
         >>> planner = LaCAM()
+        >>>
+        >>> # Anytime mode: Get eventually optimal solution
         >>> solution = planner.solve(
         ...     grid=grid,
         ...     starts=starts,
         ...     goals=goals,
         ...     time_limit_ms=5000,
-        ...     flg_star=True,
+        ...     flg_star=True,  # Enable refinement
+        ...     verbose=1
+        ... )
+        >>>
+        >>> # Fast mode: Get first solution quickly
+        >>> solution = planner.solve(
+        ...     grid=grid,
+        ...     starts=starts,
+        ...     goals=goals,
+        ...     time_limit_ms=1000,
+        ...     flg_star=False,  # Disable refinement
         ...     verbose=1
         ... )
     """
