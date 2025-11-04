@@ -1,12 +1,23 @@
 [project]
 name = "pycam"
 version = "0.1.0"
-description = ""
+description = "A minimal Python implementation of LaCAM* for Multi-Agent Path Finding (MAPF)"
 authors = [
     {name = "Kei18", email = "keisuke.oku18@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["MAPF", "multi-agent", "path-finding", "LaCAM", "robotics", "planning"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "numpy>=1.25.1",
     "jupyterlab>=3.0.0,<4.0.0a0",
@@ -24,6 +35,11 @@ dev = [
     "pre-commit>=3.3.3",
     "python-lsp-server>=1.7.4",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Kei18/py-lacam"
+Repository = "https://github.com/Kei18/py-lacam"
+"Bug Tracker" = "https://github.com/Kei18/py-lacam/issues"
 
 [build-system]
 requires = ["hatchling"]
